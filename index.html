@@ -2,89 +2,95 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>IA Analisadora de Voo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #e6ffe6;
-      color: #004d00;
-      padding: 2em;
-    }
-    #resultado {
-      margin-top: 2em;
-      background: #ffffff;
-      padding: 1em;
-      border-left: 5px solid #008000;
-      white-space: pre-wrap;
-    }
-  </style>
+  <title>Chat IA - Log de Drone</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🛸 Analisador de Logs de Drone com IA</h1>
-  <p>Faça upload do seu arquivo de log (.json):</p>
-  <input type="file" id="fileInput" accept=".json"><br><br>
-  <input type="text" id="chave" placeholder="Digite sua chave da API" style="width:300px;"><br><br>
-  <button onclick="enviarParaIA()">Analisar com IA</button>
+  <div class="container">
+    <h1>🛸 Chat IA – Analisador de Logs</h1>
 
-  <div id="resultado">Nenhum resultado ainda.</div>
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="input-area">
+      <input type="file" id="fileInput" accept=".json">
+      <input type="text" id="chave" placeholder="🔑 Sua chave da API (OpenRouter)">
+      <button onclick="enviarParaIA()">Enviar Log para IA</button>
+      <div id="status" class="loading"></div>
+    </div>
+  </div>
 
   <script>
-  let logContent = '';
+    let logContent = null;
 
-  document.getElementById('fileInput').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      try {
-        logContent = JSON.parse(event.target.result);
-        document.getElementById('resultado').textContent = '✅ Log carregado com sucesso. Pronto para análise.';
-      } catch (err) {
-        document.getElementById('resultado').textContent = '❌ Erro ao ler JSON.';
-      }
-    };
-    reader.readAsText(file);
-  });
+    function appendMessage(text, sender) {
+      const chat = document.getElementById('chatBox');
+      const msg = document.createElement('div');
+      msg.className = `msg ${sender}`;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-  async function enviarParaIA() {
-    const apiKey = document.getElementById('chave').value.trim();
-    if (!apiKey) return alert("Informe a chave da API.");
-    if (!logContent) return alert("Carregue o log primeiro.");
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        try {
+          logContent = JSON.parse(event.target.result);
+          appendMessage("📄 Log carregado com sucesso! Pronto para análise.", "user");
+        } catch (err) {
+          appendMessage("❌ Erro ao ler o arquivo JSON.", "user");
+        }
+      };
+      reader.readAsText(file);
+    });
 
-    const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo e identifique comportamentos anormais, erros operacionais e sugira melhorias para a missão. Seja detalhado e técnico.
+    async function enviarParaIA() {
+      const apiKey = document.getElementById('chave').value.trim();
+      if (!apiKey) return alert("Informe sua chave da API.");
+      if (!logContent) return alert("Carregue um arquivo de log primeiro.");
+
+      const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo (em JSON) e identifique:
+1. Erros operacionais;
+2. Comportamentos anormais;
+3. Sugestões técnicas para melhoria da missão.
+
+Responda em tom profissional e técnico:
 
 LOG:
 ${JSON.stringify(logContent, null, 2)}
 `;
 
-    document.getElementById('resultado').textContent = '⏳ Enviando para IA...';
+      appendMessage("⏳ Enviando log para IA...", "user");
+      document.getElementById('status').textContent = "Processando...";
 
-    try {
-      const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + apiKey,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://riancesaros.github.io/chat-pi/",
-          "X-Title": "LogAnalizer"
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-3.5-turbo",
-          temperature: 0.3,
-          max_tokens: 1500,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
+      try {
+        const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + apiKey,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://riancesaros.github.io/chat-pi/",
+            "X-Title": "LogAnalizer"
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-3.5-turbo",
+            temperature: 0.3,
+            max_tokens: 1500,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
 
-      const json = await resposta.json();
-      const respostaIA = json.choices?.[0]?.message?.content || "Sem resposta da IA.";
-      document.getElementById('resultado').textContent = respostaIA;
-
-    } catch (error) {
-      console.error("Erro ao enviar para a IA:", error);
-      document.getElementById('resultado').textContent = '❌ Erro ao obter resposta da IA.';
+        const json = await resposta.json();
+        const respostaIA = json.choices?.[0]?.message?.content || "Sem resposta da IA.";
+        appendMessage(respostaIA, "ia");
+        document.getElementById('status').textContent = "";
+      } catch (error) {
+        appendMessage("❌ Erro ao se comunicar com a IA.", "ia");
+        console.error(error);
+        document.getElementById('status').textContent = "";
+      }
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>
