@@ -29,59 +29,62 @@
   <div id="resultado">Nenhum resultado ainda.</div>
 
   <script>
-    let logContent = '';
+  let logContent = '';
 
-    document.getElementById('fileInput').addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        try {
-          logContent = JSON.parse(event.target.result);
-          document.getElementById('resultado').textContent = '✅ Log carregado com sucesso. Pronto para análise.';
-        } catch (err) {
-          document.getElementById('resultado').textContent = '❌ Erro ao ler JSON.';
-        }
-      };
-      reader.readAsText(file);
-    });
+  document.getElementById('fileInput').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      try {
+        logContent = JSON.parse(event.target.result);
+        document.getElementById('resultado').textContent = '✅ Log carregado com sucesso. Pronto para análise.';
+      } catch (err) {
+        document.getElementById('resultado').textContent = '❌ Erro ao ler JSON.';
+      }
+    };
+    reader.readAsText(file);
+  });
 
-    async function enviarParaIA() {
-      const apiKey = document.getElementById('chave').value.trim();
-      if (!apiKey) return alert("Informe a chave da API.");
-      if (!logContent) return alert("Carregue o log primeiro.");
+  async function enviarParaIA() {
+    const apiKey = document.getElementById('chave').value.trim();
+    if (!apiKey) return alert("Informe a chave da API.");
+    if (!logContent) return alert("Carregue o log primeiro.");
 
-      const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo e identifique comportamentos anormais, erros operacionais e sugerir melhorias para a missão. Seja detalhado e técnico.
+    const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo e identifique comportamentos anormais, erros operacionais e sugira melhorias para a missão. Seja detalhado e técnico.
 
 LOG:
 ${JSON.stringify(logContent, null, 2)}
 `;
 
-      document.getElementById('resultado').textContent = '⏳ Enviando para IA...';
+    document.getElementById('resultado').textContent = '⏳ Enviando para IA...';
 
-      // Função para fazer uma chamada à API OpenRouter
-            async function callOpenRouter(promptText) {
-                const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": "Bearer " + apikey,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://riancesaros.github.io/chat-pi/",
-                        "X-Title": "LogAnalizer"
-                    },
-                    body: JSON.stringify({
-                        model: "openai/gpt-3.5-turbo", 
-                        temperature: 0.3, 
-                        max_tokens: 1500, 
-                        messages: [ { role: "user", content: promptText } ]
-                    })
-                });
-                const json = await r.json();
-                return json.choices?.[0]?.message?.content || "Sem resposta.";
-            }
+    try {
+      const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + apiKey,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://riancesaros.github.io/chat-pi/",
+          "X-Title": "LogAnalizer"
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-3.5-turbo",
+          temperature: 0.3,
+          max_tokens: 1500,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
 
-      const resultado = await resposta.json();
-      document.getElementById('resultado').textContent = resultado.choices?.[0]?.message?.content || 'Erro ao obter resposta da IA.';
+      const json = await resposta.json();
+      const respostaIA = json.choices?.[0]?.message?.content || "Sem resposta da IA.";
+      document.getElementById('resultado').textContent = respostaIA;
+
+    } catch (error) {
+      console.error("Erro ao enviar para a IA:", error);
+      document.getElementById('resultado').textContent = '❌ Erro ao obter resposta da IA.';
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
