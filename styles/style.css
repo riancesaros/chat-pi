@@ -1,0 +1,162 @@
+body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #138e61;
+      margin: 0;
+      padding: 0;
+      background-image: url('../imgs/background.png');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: 100% 100%;
+    }
+header {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #138e61;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  font-family: "Lucida Console";
+}
+header > img {
+  height: 60px;
+  padding-right: 20px;
+  padding-left: 10%;
+}
+.keybox, .box {
+  background-color: rgba(84, 84, 84, 0.7);
+  border: solid 1px white;
+  color: white;
+  margin-bottom: 40px;
+}
+.keybox h3 {
+  margin-left: 20px;
+}
+.keybox a {
+  height: 40px;
+  min-width: 180px;
+  background-color: #004aad;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 22px;
+  padding-left: 20px;
+  padding-right: 20px;
+  transition: 0.5s;
+}
+.keybox a:hover {
+  border: solid 1px rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+.keyform {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: max;
+  margin-left: 20px;
+  margin-right: 35px;
+
+}
+
+    .container {
+      max-width: 70%;
+      margin: 0 auto;
+      padding: 2em 1em;
+    }
+
+    h1 {
+      text-align: center;
+      color: #006400;
+    }
+
+    .chat-box {
+      background: #ffffff;
+      border: 1px solid #b3e6b3;
+      border-radius: 10px;
+      padding: 1em;
+      height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 0 8px rgba(0, 128, 0, 0.1);
+      color: black;
+    }
+
+    .msg {
+      margin-bottom: 1em;
+      padding: 0.8em 1em;
+      border-radius: 12px;
+      max-width: 85%;
+      word-wrap: break-word;
+    }
+
+    .msg.user {
+      background-color: #e6ffe6;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .msg.ia {
+      background-color: #ccffcc;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .input-area {
+      display: flex;
+      flex-direction: column;
+      margin-top: 1.5em;
+    }
+
+    input[type="file"],
+    input[type="text"],
+    button {
+      margin: 0.4em 0;
+      padding: 0.6em;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #138e61;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #007a29;
+      border: solid 1px #ffffff75;
+    }
+    .keyform input {
+    width: 75%;
+    border-radius: 100px;
+    }
+    .box {
+      padding: 30px;
+    }
+    .loading {
+      font-style: italic;
+      color: #555;
+      text-align: center;
+      margin-top: 1em;
+    }
+  footer {
+    background-color: rgba(40, 40, 40, 0.8);
+    color: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 15%;
+  }
+  footer a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }

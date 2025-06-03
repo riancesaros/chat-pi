@@ -2,23 +2,39 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Chat IA - Log de Drone</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Drone chat</title>
+  <link rel="icon" type="image/x-icon" href="/imgs/favicon-16x16.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
+  <header>
+    <img src="imgs/logo.png" alt="Logo">
+    <h1>LogAnalizer</h1>
+  </header>
   <div class="container">
-    <h1>🛸 Chat IA – Analisador de Logs</h1>
+    <div class="keybox">
+      <h3>Digite sua chave de API (openai)</h3>
+      <div class="keyform">
+        <input type="text" id="chave">
+        <a href="https://openrouter.ai/" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i><h3>Adquirir chave</h3></a>
+      </div>
+    </div>
+    <div class="box">
+      <div class="input-area">
+        <input type="file" id="fileInput" accept=".json">
+        <button onclick="enviarParaIA()"><i class="fa-solid fa-file-import"></i>Enviar Log</button>
+        <div id="status" class="loading"></div>
+      </div>
 
-    <div class="chat-box" id="chatBox"></div>
-
-    <div class="input-area">
-      <input type="file" id="fileInput" accept=".json">
-      <input type="text" id="chave" placeholder="🔑 Sua chave da API (OpenRouter)">
-      <button onclick="enviarParaIA()">Enviar Log para IA</button>
-      <div id="status" class="loading"></div>
+      <div class="chat-box" id="chatBox"></div>
     </div>
   </div>
 
+  <footer>
+    <p>Documentação disponível no&nbsp;&nbsp;</p><a href="https://github.com/riancesaros/chat-pi" target="_blank">GitHub &nbsp;<i class="fa-brands fa-github"></i></a>
+  </footer>
+  
   <script>
     let logContent = null;
 
