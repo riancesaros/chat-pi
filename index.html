@@ -1,33 +1,87 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FlyIA</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>IA Analisadora de Voo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e6ffe6;
+      color: #004d00;
+      padding: 2em;
+    }
+    #resultado {
+      margin-top: 2em;
+      background: #ffffff;
+      padding: 1em;
+      border-left: 5px solid #008000;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Diagnóstico de Voo de Drone</h1>
+  <h1>🛸 Analisador de Logs de Drone com IA</h1>
+  <p>Faça upload do seu arquivo de log (.json):</p>
+  <input type="file" id="fileInput" accept=".json"><br><br>
+  <input type="text" id="chave" placeholder="Digite sua chave da API" style="width:300px;"><br><br>
+  <button onclick="enviarParaIA()">Analisar com IA</button>
 
-    <form id="logForm">
-      <label for="logFile"><i class="fa-solid fa-file-lines"></i> Envie o arquivo de log (.txt):</label>
-      <input type="file" id="logFile" accept=".txt" required />
-      <button type="submit"><i class="fa-solid fa-upload"></i> Analisar Log</button>
-    </form>
+  <div id="resultado">Nenhum resultado ainda.</div>
 
-    <section>
-      <h2><i class="fa-solid fa-copy"></i> Conteúdo do Log</h2>
-      <pre id="logContent">(nenhum arquivo carregado)</pre>
-    </section>
+  <script>
+    let logContent = '';
 
-    <section>
-      <h2><i class="fa-solid fa-square-poll-vertical"></i> Diagnóstico da IA</h2>
-      <pre id="diagnostico">(diagnóstico aparecerá aqui)</pre>
-    </section>
-  </div>
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        try {
+          logContent = JSON.parse(event.target.result);
+          document.getElementById('resultado').textContent = '✅ Log carregado com sucesso. Pronto para análise.';
+        } catch (err) {
+          document.getElementById('resultado').textContent = '❌ Erro ao ler JSON.';
+        }
+      };
+      reader.readAsText(file);
+    });
 
-  <script src="script.js"></script>
+    async function enviarParaIA() {
+      const apiKey = document.getElementById('chave').value.trim();
+      if (!apiKey) return alert("Informe a chave da API.");
+      if (!logContent) return alert("Carregue o log primeiro.");
+
+      const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo e identifique comportamentos anormais, erros operacionais e sugerir melhorias para a missão. Seja detalhado e técnico.
+
+LOG:
+${JSON.stringify(logContent, null, 2)}
+`;
+
+      document.getElementById('resultado').textContent = '⏳ Enviando para IA...';
+
+      // Função para fazer uma chamada à API OpenRouter
+            async function callOpenRouter(promptText) {
+                const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + apikey,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://riancesaros.github.io/chat-pi/",
+                        "X-Title": "LogAnalizer"
+                    },
+                    body: JSON.stringify({
+                        model: "openai/gpt-3.5-turbo", 
+                        temperature: 0.3, 
+                        max_tokens: 1500, 
+                        messages: [ { role: "user", content: promptText } ]
+                    })
+                });
+                const json = await r.json();
+                return json.choices?.[0]?.message?.content || "Sem resposta.";
+            }
+
+      const resultado = await resposta.json();
+      document.getElementById('resultado').textContent = resultado.choices?.[0]?.message?.content || 'Erro ao obter resposta da IA.';
+    }
+  </script>
 </body>
 </html>
