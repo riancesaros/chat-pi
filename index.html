@@ -37,12 +37,38 @@
   
   <script>
     let logContent = null;
+    let promptConfig = null;
+
+    // Load the prompt configuration from JSON file
+    async function loadPromptConfig() {
+      try {
+        const response = await fetch('log_prompt.json');
+        if (!response.ok) throw new Error('Prompt file not found');
+        promptConfig = await response.json();
+      } catch (error) {
+        console.error("Error loading prompt configuration:", error);
+        // Fallback to default configuration if file fails to load
+        promptConfig = {
+          system_prompt: "Você é um engenheiro aeronáutico especializado em drones multirrotores. Receberá um log de voo em JSON e deve realizar uma análise diagnóstica completa.",
+          output_format: {
+            seções: [
+              "## 1. Erros Operacionais (severidade e descrição)",
+              "## 2. Comportamentos Anormais (evento, provável causa)",
+              "## 3. Sugestões Técnicas (prioridade, ação recomendada, impacto esperado)"
+            ]
+          }
+        };
+      }
+    }
+
+    // Load the prompt configuration when page loads
+    loadPromptConfig();
 
     function appendMessage(text, sender) {
       const chat = document.getElementById('chatBox');
       const msg = document.createElement('div');
       msg.className = `msg ${sender}`;
-      msg.textContent = text;
+      msg.innerHTML = text.replace(/\n/g, '<br>'); // Preserve line breaks
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
@@ -61,21 +87,45 @@
       reader.readAsText(file);
     });
 
+    function constructPrompt(logData) {
+      if (!promptConfig) return "";
+
+      let prompt = `${promptConfig.system_prompt}\n\n`;
+      
+      // Add analysis guidelines
+      prompt += `**Diretrizes de Análise:**\n`;
+      prompt += `Objetivo: ${promptConfig.analysis_guidelines.objetivo}\n\n`;
+      
+      prompt += `**Checklist Técnico:**\n`;
+      promptConfig.analysis_guidelines.checklist.forEach(item => {
+        prompt += `- ${item}\n`;
+      });
+      
+      prompt += `\n**Método de Análise:**\n`;
+      promptConfig.analysis_guidelines.método.forEach(step => {
+        prompt += `- ${step}\n`;
+      });
+      
+      prompt += `\n**Formato de Saída:**\n`;
+      prompt += `A resposta deve seguir estritamente o seguinte formato:\n`;
+      promptConfig.output_format.seções.forEach(section => {
+        prompt += `${section}\n`;
+      });
+      
+      prompt += `\n**Tom:** ${promptConfig.tom}\n\n`;
+      
+      prompt += `**Dados do Log para Análise:**\n${JSON.stringify(logData, null, 2)}\n\n`;
+      prompt += `**Instruções Finais:** ${promptConfig.instruções}`;
+      
+      return prompt;
+    }
+
     async function enviarParaIA() {
       const apiKey = document.getElementById('chave').value.trim();
       if (!apiKey) return alert("Informe sua chave da API.");
       if (!logContent) return alert("Carregue um arquivo de log primeiro.");
 
-      const prompt = `Você é um especialista em engenharia de drones. Analise o seguinte log de voo (em JSON) e identifique:
-1. Erros operacionais;
-2. Comportamentos anormais;
-3. Sugestões técnicas para melhoria da missão.
-
-Responda em tom profissional e técnico:
-
-LOG:
-${JSON.stringify(logContent, null, 2)}
-`;
+      const fullPrompt = constructPrompt(logContent);
 
       appendMessage("⏳ Enviando log para IA...", "user");
       document.getElementById('status').textContent = "Processando...";
@@ -92,8 +142,17 @@ ${JSON.stringify(logContent, null, 2)}
           body: JSON.stringify({
             model: "openai/gpt-3.5-turbo",
             temperature: 0.3,
-            max_tokens: 1500,
-            messages: [{ role: "user", content: prompt }]
+            max_tokens: 2000, // Increased token limit for more detailed responses
+            messages: [
+              {
+                role: "system",
+                content: promptConfig.system_prompt
+              },
+              {
+                role: "user",
+                content: fullPrompt
+              }
+            ]
           })
         });
 
